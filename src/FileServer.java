@@ -146,6 +146,7 @@ public class FileServer {
 				while (!shutDownFlag && (len = f.read()) > 0) {
 					sb.append((char) len);
 				} // while
+				f.close();
 				p.sendGoodResponse(sb.toString());
 			} catch (IOException e) {
 			} finally {
