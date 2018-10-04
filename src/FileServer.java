@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import Utilitaires.Protocol;
 import Utilitaires.Transport;
 
 public class FileServer {
@@ -117,13 +118,8 @@ public class FileServer {
 		} // constructor(Socket)
 
 		public void run() {
-			Transport ts = null;
-			try {
-				ts = new Transport(this.s);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+
+			Protocol p = new Protocol(this.s);
 			InputStream in;
 			String fileName = "";
 			PrintStream out = null;
@@ -133,46 +129,27 @@ public class FileServer {
 			System.out.println("Lancement du thread pour gérer" + "le protocole avec un client");
 			// read the file name sent by the client and open the file.
 			try {
-                fileName = (String) ts.recevoir();
+                fileName = p.receiveClientRequest();
 				f = new FileInputStream(fileName);
-			} catch (IOException | ClassNotFoundException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 				activeConnectionCount--;
 
-				try {
-					ts.envoyer("Bad:" + fileName + "\n");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				try {
-					ts.fermer();
-				} catch (IOException ie) {
-				}
+				p.sendBadResponse();
 				return;
 			} // try
 
 			// send contents of file to client.
-			try {
-				ts.envoyer("Good:\n");
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
 			try {
 				int len;
 				StringBuilder sb = new StringBuilder();
 				while (!shutDownFlag && (len = f.read()) > 0) {
 					sb.append((char) len);
 				} // while
-				ts.envoyer(sb);
+				p.sendGoodResponse(sb.toString());
 			} catch (IOException e) {
 			} finally {
-				try {
-					activeConnectionCount--;
-					ts.fermer();
-				} catch (IOException e) {
-				} // try
+				activeConnectionCount--;
 			} // try
 		} // run()
 	} // class FileServerWorker
