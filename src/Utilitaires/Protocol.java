@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class Protocol implements InterfaceProtocol {
-	private Transport ts;
+	private InterfaceTransport ts;
 	
-	public Protocol(Socket s) {
+	public Protocol(Transport t) {
 		// On essaye d'accéder au serveur
 		try {
-			this.ts = new Transport(s);
+			this.ts = t;
 		} catch (Exception e) {
 			System.err.println("Unable to reach the server");
 			e.printStackTrace();

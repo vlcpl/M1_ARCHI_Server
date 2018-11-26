@@ -96,7 +96,7 @@ public class FileServer {
 				} // if
 					// Create worker object to process connection.
 				System.out.println("Acceptation d'un client ");
-				new FileServerWorker(socket);
+				new FileServerWorker(new Protocol(new Transport(socket)));
 			} // while
 		} catch (IOException e) {
 			// if there is an I/O error just return
@@ -111,7 +111,6 @@ public class FileServer {
 	} // shutDown()
 
 	private class FileServerWorker implements Runnable {
-		//private Socket s;
 		private InterfaceProtocol p;
 		
 		public String readFile(FileInputStream f) throws IOException {
@@ -124,15 +123,13 @@ public class FileServer {
 			return sb.toString();
 		}
 
-		FileServerWorker(Socket s) {
-			this.p = new Protocol(s);
-			//this.s = s;
+		FileServerWorker(Protocol p) {
+			this.p = p;
 			new Thread(this).start();
 		} // constructor(Socket)
 
 		public void run() {
 
-			//InterfaceProtocol p = new Protocol(this.s);
 			InputStream in;
 			String fileName = "";
 			PrintStream out = null;
