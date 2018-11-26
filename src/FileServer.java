@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import Utilitaires.InterfaceProtocol;
 import Utilitaires.Protocol;
 import Utilitaires.Transport;
 
@@ -110,16 +111,28 @@ public class FileServer {
 	} // shutDown()
 
 	private class FileServerWorker implements Runnable {
-		private Socket s;
+		//private Socket s;
+		private InterfaceProtocol p;
+		
+		public String readFile(FileInputStream f) throws IOException {
+			int len;
+
+			StringBuilder sb = new StringBuilder();
+			while (!shutDownFlag && (len = f.read()) > 0) {
+				sb.append((char) len);
+			} // while
+			return sb.toString();
+		}
 
 		FileServerWorker(Socket s) {
-			this.s = s;
+			this.p = new Protocol(s);
+			//this.s = s;
 			new Thread(this).start();
 		} // constructor(Socket)
 
 		public void run() {
 
-			Protocol p = new Protocol(this.s);
+			//InterfaceProtocol p = new Protocol(this.s);
 			InputStream in;
 			String fileName = "";
 			PrintStream out = null;
@@ -141,13 +154,9 @@ public class FileServer {
 
 			// send contents of file to client.
 			try {
-				int len;
-				StringBuilder sb = new StringBuilder();
-				while (!shutDownFlag && (len = f.read()) > 0) {
-					sb.append((char) len);
-				} // while
+				String fileContent = this.readFile(f);
 				f.close();
-				p.sendGoodResponse(sb.toString());
+				p.sendGoodResponse(fileContent);
 			} catch (IOException e) {
 			} finally {
 				activeConnectionCount--;

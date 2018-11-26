@@ -3,7 +3,7 @@ package Utilitaires;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Protocol {
+public class Protocol implements InterfaceProtocol {
 	private Transport ts;
 	
 	public Protocol(Socket s) {
@@ -17,10 +17,10 @@ public class Protocol {
 		}
 	}
 	
-	/**
-	 * Receives a request from a client
-	 * @return
+	/* (non-Javadoc)
+	 * @see Utilitaires.InterfaceProtocol#receiveClientRequest()
 	 */
+	@Override
 	public String receiveClientRequest(){
 		String clientRequest = null;
 		try {
@@ -33,10 +33,10 @@ public class Protocol {
 		return clientRequest;
 	}
 	
-	/**
-	 * If the file exists, sends a "good" response to the client with the file's content
-	 * @param fileContent
+	/* (non-Javadoc)
+	 * @see Utilitaires.InterfaceProtocol#sendGoodResponse(java.lang.String)
 	 */
+	@Override
 	public void sendGoodResponse(String fileContent) {
 		try {
 			this.ts.envoyer("Good");
@@ -48,9 +48,10 @@ public class Protocol {
 		}
 	}
 	
-	/**
-	 * If the file does not exist, sends a "bad" response to the client
+	/* (non-Javadoc)
+	 * @see Utilitaires.InterfaceProtocol#sendBadResponse()
 	 */
+	@Override
 	public void sendBadResponse() {
 		try {
 			this.ts.envoyer("Bad");
