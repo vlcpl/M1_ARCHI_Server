@@ -1,9 +1,5 @@
-import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -113,51 +109,45 @@ public class FileServer {
 	private class FileServerWorker implements Runnable {
 		private InterfaceProtocol p;
 		
-		public String readFile(FileInputStream f) throws IOException {
+		public String readFile(String fileName) throws IOException {
 			int len;
-
+			FileInputStream inputStream = new FileInputStream(fileName);
 			StringBuilder sb = new StringBuilder();
-			while (!shutDownFlag && (len = f.read()) > 0) {
+			while (!shutDownFlag && (len = inputStream.read()) > 0) {
 				sb.append((char) len);
 			} // while
+			inputStream.close();
 			return sb.toString();
 		}
 
-		FileServerWorker(Protocol p) {
+		FileServerWorker(InterfaceProtocol p) {
 			this.p = p;
 			new Thread(this).start();
 		} // constructor(Socket)
 
 		public void run() {
-
-			InputStream in;
-			String fileName = "";
-			PrintStream out = null;
-			FileInputStream f;
-
 			activeConnectionCount++;
 			System.out.println("Lancement du thread pour gérer" + "le protocole avec un client");
 			// read the file name sent by the client and open the file.
 			try {
-                fileName = p.receiveClientRequest();
-				f = new FileInputStream(fileName);
-			} catch (IOException e) {
-				e.printStackTrace();
-				activeConnectionCount--;
-
-				p.sendBadResponse();
-				return;
-			} // try
-
-			// send contents of file to client.
-			try {
-				String fileContent = this.readFile(f);
-				f.close();
+                String fileName = p.receiveClientRequest();
+             // send contents of file to client.
+				String fileContent = this.readFile(fileName);
 				p.sendGoodResponse(fileContent);
-			} catch (IOException e) {
-			} finally {
+			} catch (IOException | NullPointerException | ClassNotFoundException e) {
+				e.printStackTrace();
+				System.out.println("Bad");
 				activeConnectionCount--;
-			} // try
+				return;
+			} finally {				
+				try {
+					p.fermer();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				activeConnectionCount--;
+			}
+			 // try
 		} // run()
 	} // class FileServerWorker
 } // class FileServer

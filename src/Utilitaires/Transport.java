@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Objects;
 
 public class Transport implements InterfaceTransport {
 
@@ -29,8 +30,12 @@ public class Transport implements InterfaceTransport {
 		out.writeObject(object);
 	}
 
-	public Object recevoir() throws IOException, ClassNotFoundException {
-		return din.readObject();
+	public Object recevoir() throws NullPointerException, ClassNotFoundException, IOException {
+		Object o = din.readObject();
+		if(Objects.isNull(o)) {
+			throw new NullPointerException();
+		}
+		return o;
 	}
 
 	public void fermer() throws IOException {
